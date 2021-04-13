@@ -2,7 +2,7 @@ package com.property.management.controller;
 
 import com.property.management.dto.ApprovalResponse;
 import com.property.management.dto.CreatePropertyRequest;
-import com.property.management.dto.PropertyDto;
+import com.property.management.dto.PropertyResponse;
 import com.property.management.dto.UpdatePropertyRequest;
 import com.property.management.service.PropertyService;
 import lombok.RequiredArgsConstructor;
@@ -22,19 +22,19 @@ public class PropertyController {
     private final PropertyService propertyService;
 
     @PostMapping
-    public ResponseEntity<PropertyDto> create(@Valid @RequestBody CreatePropertyRequest createPropertyRequest) {
+    public ResponseEntity<PropertyResponse> create(@Valid @RequestBody CreatePropertyRequest createPropertyRequest) {
         log.info("Rest API to create property {}", createPropertyRequest);
         return ResponseEntity.ok(propertyService.create(createPropertyRequest));
     }
 
     @PutMapping
-    public ResponseEntity<PropertyDto> create(@Valid @RequestBody UpdatePropertyRequest updatePropertyRequest) {
+    public ResponseEntity<PropertyResponse> create(@Valid @RequestBody UpdatePropertyRequest updatePropertyRequest) {
         log.info("Rest API to update property {}", updatePropertyRequest);
         return ResponseEntity.ok(propertyService.update(updatePropertyRequest));
     }
 
     @GetMapping
-    public ResponseEntity<List<PropertyDto>> create(@RequestParam String propertyName) {
+    public ResponseEntity<List<PropertyResponse>> create(@RequestParam String propertyName) {
         log.info("Rest API to search property by name: {}", propertyName);
         return ResponseEntity.ok(propertyService.search(propertyName));
     }

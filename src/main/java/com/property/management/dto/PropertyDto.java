@@ -16,8 +16,6 @@ import static com.property.management.constant.Constants.*;
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class PropertyDto {
 
-    private Long id;
-
     @NotNull(message = PROPERTY_TYPE_NULL)
     private Integer type;
 

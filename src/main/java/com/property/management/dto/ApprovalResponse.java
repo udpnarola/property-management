@@ -9,14 +9,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-public class ApprovalResponse {
-
-    private PropertyDto propertyDetail;
+public class ApprovalResponse extends PropertyResponse {
 
     private UserResponse approvedBy;
-
-    public ApprovalResponse(PropertyDto propertyDetail, UserResponse approvedBy){
-        this.propertyDetail = propertyDetail;
-        this.approvedBy = approvedBy;
-    }
 }

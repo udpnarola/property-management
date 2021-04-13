@@ -30,35 +30,35 @@ public class PropertyServiceImpl implements PropertyService {
 
     @Override
     @Transactional
-    public PropertyDto create(CreatePropertyRequest createPropertyRequest) {
+    public PropertyResponse create(CreatePropertyRequest createPropertyRequest) {
         log.info("Service method to create property: {}", createPropertyRequest);
         validatePropertyRequest(createPropertyRequest);
         Property createdProperty = propertyRepository
                 .save(propertyMapper.toProperty(createPropertyRequest));
         log.info("Property successfully created {}", createdProperty);
-        return propertyMapper.toPropertyDto(createdProperty);
+        return propertyMapper.toPropertyResponse(createdProperty);
     }
 
     @Override
     @Transactional
-    public PropertyDto update(UpdatePropertyRequest updatePropertyRequest) {
+    public PropertyResponse update(UpdatePropertyRequest updatePropertyRequest) {
         log.info("Service method to update property: {}", updatePropertyRequest);
         validatePropertyRequest(updatePropertyRequest);
         if (!propertyRepository.existsById(updatePropertyRequest.getId()))
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, ERR_PROPERTY_NOT_FOUND);
         Property updatedProperty = propertyRepository.save(propertyMapper.toProperty(updatePropertyRequest));
         log.info("Property successfully updated: {}", updatedProperty);
-        return propertyMapper.toPropertyDto(updatedProperty);
+        return propertyMapper.toPropertyResponse(updatedProperty);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<PropertyDto> search(String name) {
+    public List<PropertyResponse> search(String name) {
         log.info("Service method to search property: {}", name);
         return propertyRepository
                 .findByName(name)
                 .parallelStream()
-                .map(propertyMapper::toPropertyDto)
+                .map(propertyMapper::toPropertyResponse)
                 .collect(Collectors.toList());
     }
 
@@ -69,17 +69,17 @@ public class PropertyServiceImpl implements PropertyService {
                 .findById(propertyId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, ERR_PROPERTY_NOT_FOUND));
 
-        if (property.getUser() != null)
+        if (Boolean.TRUE.equals(property.getIsApproved()))
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, ERR_PROPERTY_ALREADY_APPROVED);
+
+        property.setIsApproved(true);
 
         User user = userRepository
                 .findById(apiKey)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, ERR_USER_NOT_FOUND));
         user.addProperty(property);
 
-        PropertyDto propertyDto = propertyMapper.toPropertyDto(property);
-        UserResponse userResponse = propertyMapper.toUserResponse(user);
-        return new ApprovalResponse(propertyDto, userResponse);
+        return propertyMapper.toApprovalResponse(property);
     }
 
     private void validatePropertyRequest(PropertyDto propertyDto) {
