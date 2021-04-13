@@ -14,7 +14,10 @@ import java.util.List;
 public class User {
 
     @Id
-    @Column(length = 50)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(unique = true, length = 50)
     private String apiKey;
 
     @Column(nullable = false, length = 100)

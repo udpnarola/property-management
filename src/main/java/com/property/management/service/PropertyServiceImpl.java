@@ -44,9 +44,19 @@ public class PropertyServiceImpl implements PropertyService {
     public PropertyResponse update(UpdatePropertyRequest updatePropertyRequest) {
         log.info("Service method to update property: {}", updatePropertyRequest);
         validatePropertyRequest(updatePropertyRequest);
-        if (!propertyRepository.existsById(updatePropertyRequest.getId()))
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, ERR_PROPERTY_NOT_FOUND);
-        Property updatedProperty = propertyRepository.save(propertyMapper.toProperty(updatePropertyRequest));
+
+        Property property = propertyRepository
+                .findById(updatePropertyRequest.getId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, ERR_PROPERTY_NOT_FOUND));
+
+        Property propertyToUpdate = propertyMapper.toProperty(updatePropertyRequest);
+
+        if (property.getIsApproved()) {
+            propertyToUpdate.setIsApproved(true);
+            propertyToUpdate.setUser(property.getUser());
+        }
+
+        Property updatedProperty = propertyRepository.save(propertyToUpdate);
         log.info("Property successfully updated: {}", updatedProperty);
         return propertyMapper.toPropertyResponse(updatedProperty);
     }
@@ -75,7 +85,7 @@ public class PropertyServiceImpl implements PropertyService {
         property.setIsApproved(true);
 
         User user = userRepository
-                .findById(apiKey)
+                .findByApiKey(apiKey)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, ERR_USER_NOT_FOUND));
         user.addProperty(property);
 

@@ -44,7 +44,6 @@ public class Property {
     private Boolean isFurnished;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
     private User user;
 
 

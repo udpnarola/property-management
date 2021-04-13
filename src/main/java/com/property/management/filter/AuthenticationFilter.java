@@ -33,7 +33,7 @@ public class AuthenticationFilter extends OncePerRequestFilter {
             return;
         }
         log.info("Api Key: {}", apiKey);
-        if (!userRepository.existsById(apiKey)) {
+        if (!userRepository.existsByApiKey(apiKey)) {
             throwUnauthorizedException(httpServletResponse);
             return;
         }
