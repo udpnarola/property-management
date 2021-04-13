@@ -1,0 +1,92 @@
+package com.property.management.service;
+
+import com.property.management.constant.PropertyType;
+import com.property.management.dto.*;
+import com.property.management.entity.Property;
+import com.property.management.entity.User;
+import com.property.management.mapper.PropertyMapper;
+import com.property.management.repository.PropertyRepository;
+import com.property.management.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+import static com.property.management.constant.Constants.*;
+
+@Service
+@Log4j2
+@RequiredArgsConstructor
+public class PropertyServiceImpl implements PropertyService {
+
+    private final PropertyRepository propertyRepository;
+    private final UserRepository userRepository;
+    private final PropertyMapper propertyMapper;
+
+    @Override
+    @Transactional
+    public PropertyDto create(CreatePropertyRequest createPropertyRequest) {
+        log.info("Service method to create property: {}", createPropertyRequest);
+        validatePropertyRequest(createPropertyRequest);
+        Property createdProperty = propertyRepository
+                .save(propertyMapper.toProperty(createPropertyRequest));
+        log.info("Property successfully created {}", createdProperty);
+        return propertyMapper.toPropertyDto(createdProperty);
+    }
+
+    @Override
+    @Transactional
+    public PropertyDto update(UpdatePropertyRequest updatePropertyRequest) {
+        log.info("Service method to update property: {}", updatePropertyRequest);
+        validatePropertyRequest(updatePropertyRequest);
+        if (!propertyRepository.existsById(updatePropertyRequest.getId()))
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, ERR_PROPERTY_NOT_FOUND);
+        Property updatedProperty = propertyRepository.save(propertyMapper.toProperty(updatePropertyRequest));
+        log.info("Property successfully updated: {}", updatedProperty);
+        return propertyMapper.toPropertyDto(updatedProperty);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<PropertyDto> search(String name) {
+        log.info("Service method to search property: {}", name);
+        return propertyRepository
+                .findByName(name)
+                .parallelStream()
+                .map(propertyMapper::toPropertyDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional
+    public ApprovalResponse approve(String apiKey, Long propertyId) {
+        Property property = propertyRepository
+                .findById(propertyId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, ERR_PROPERTY_NOT_FOUND));
+
+        if (property.getUser() != null)
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, ERR_PROPERTY_ALREADY_APPROVED);
+
+        User user = userRepository
+                .findById(apiKey)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, ERR_USER_NOT_FOUND));
+        user.addProperty(property);
+
+        PropertyDto propertyDto = propertyMapper.toPropertyDto(property);
+        UserResponse userResponse = propertyMapper.toUserResponse(user);
+        return new ApprovalResponse(propertyDto, userResponse);
+    }
+
+    private void validatePropertyRequest(PropertyDto propertyDto) {
+        if (!PropertyType.exists(propertyDto.getType()))
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, ERR_PROPERTY_TYPE_NOT_FOUND);
+        if (propertyDto.getAddress().length() < DEFAULT_ADDRESS_LENGTH)
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, ERR_ADDRESS_LENGTH_NOT_ENOUGH);
+    }
+
+}

@@ -1,0 +1,8 @@
+spring:
+  profiles:
+    active: local
+
+server:
+  error:
+    include-message: always
+  port: 8081
