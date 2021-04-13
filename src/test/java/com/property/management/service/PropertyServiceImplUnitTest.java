@@ -15,7 +15,10 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
+import static com.property.management.constant.Constants.ERR_PROPERTY_TYPE_NOT_FOUND;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 
@@ -32,37 +35,55 @@ public class PropertyServiceImplUnitTest {
     private PropertyMapper propertyMapper;
 
     private static CreatePropertyRequest createPropertyRequest;
+    private static Property property;
+    private static PropertyResponse propertyResponse;
 
     @BeforeAll
-    static void initCreatePropertyRequest() {
-        CreatePropertyRequest property = new CreatePropertyRequest();
-        property.setName("Forest House");
-        property.setType(1);
-        property.setAddress("50, down town");
-        property.setBedroom(2);
-        property.setBathroom(1);
-        property.setRent(70.88);
-        property.setIsFurnished(false);
-        createPropertyRequest = property;
+    static void init() {
+        CreatePropertyRequest createPropertyReq = new CreatePropertyRequest();
+        createPropertyReq.setName("Forest House");
+        createPropertyReq.setType(1);
+        createPropertyReq.setAddress("50, down town");
+        createPropertyReq.setBedroom(2);
+        createPropertyReq.setBathroom(1);
+        createPropertyReq.setRent(70.88);
+        createPropertyReq.setIsFurnished(false);
+        createPropertyRequest = createPropertyReq;
+
+        Property propertyEntity = new Property();
+        propertyEntity.setId(1L);
+        property = propertyEntity;
+
+        PropertyResponse propertyRes = new PropertyResponse();
+        propertyRes.setId(1L);
+        propertyResponse = propertyRes;
     }
 
     @BeforeEach
     public void setup() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
     }
 
     @Test
-    public void whenValidData_thenPropertyShouldBeCreate() {
-        Property property = new Property();
-        property.setId(1L);
-        PropertyResponse propertyResponse = new PropertyResponse();
-        propertyResponse.setId(1L);
-
+    public void when_valid_data_the_property_should_be_created() {
         Mockito.when(propertyMapper.toProperty(any(CreatePropertyRequest.class))).thenReturn(property);
         Mockito.when(propertyRepository.save(property)).thenReturn(property);
         Mockito.when(propertyMapper.toPropertyResponse(property)).thenReturn(propertyResponse);
 
         PropertyResponse savedProperty = propertyService.create(createPropertyRequest);
         assertEquals(property.getId(), savedProperty.getId());
+    }
+
+    @Test
+    public void when_invalid_property_type_throw_notfound_exception() {
+        CreatePropertyRequest createPropertyReq = createPropertyRequest;
+        createPropertyReq.setType(4);
+        try {
+            propertyService.create(createPropertyReq);
+        } catch (ResponseStatusException e) {
+            assertEquals(HttpStatus.NOT_FOUND, e.getStatus());
+            assertEquals(ERR_PROPERTY_TYPE_NOT_FOUND, e.getReason());
+        }
+
     }
 }
