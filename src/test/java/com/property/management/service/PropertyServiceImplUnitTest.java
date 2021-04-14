@@ -2,6 +2,7 @@ package com.property.management.service;
 
 import com.property.management.dto.CreatePropertyRequest;
 import com.property.management.dto.PropertyResponse;
+import com.property.management.dto.UpdatePropertyRequest;
 import com.property.management.entity.Property;
 import com.property.management.mapper.PropertyMapper;
 import com.property.management.repository.PropertyRepository;
@@ -22,6 +23,7 @@ import static com.property.management.constant.Constants.ERR_ADDRESS_LENGTH_NOT_
 import static com.property.management.constant.Constants.ERR_PROPERTY_TYPE_NOT_FOUND;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 
 @RunWith(MockitoJUnitRunner.class)
 public class PropertyServiceImplUnitTest {
@@ -36,11 +38,13 @@ public class PropertyServiceImplUnitTest {
     private PropertyMapper propertyMapper;
 
     private static CreatePropertyRequest createPropertyRequest;
+    private static UpdatePropertyRequest updatePropertyRequest;
     private static Property property;
     private static PropertyResponse propertyResponse;
 
     @BeforeAll
     static void init() {
+        //CreatePropertyRequest
         CreatePropertyRequest createPropertyReq = new CreatePropertyRequest();
         createPropertyReq.setName("Forest House");
         createPropertyReq.setType(1);
@@ -51,13 +55,27 @@ public class PropertyServiceImplUnitTest {
         createPropertyReq.setIsFurnished(false);
         createPropertyRequest = createPropertyReq;
 
+        //Property
         Property propertyEntity = new Property();
         propertyEntity.setId(1L);
         property = propertyEntity;
 
+        //PropertyResponse
         PropertyResponse propertyRes = new PropertyResponse();
         propertyRes.setId(1L);
         propertyResponse = propertyRes;
+
+        //UpdatePropertyRequest
+        UpdatePropertyRequest updatePropertyReq = new UpdatePropertyRequest();
+        updatePropertyReq.setId(1L);
+        updatePropertyReq.setName("Paradise House");
+        updatePropertyReq.setType(1);
+        updatePropertyReq.setAddress("50, down town");
+        updatePropertyReq.setBedroom(2);
+        updatePropertyReq.setBathroom(1);
+        updatePropertyReq.setRent(70.88);
+        updatePropertyReq.setIsFurnished(false);
+        updatePropertyRequest = updatePropertyReq;
     }
 
     @BeforeEach
@@ -67,7 +85,7 @@ public class PropertyServiceImplUnitTest {
 
     @Test
     public void when_valid_data_then_property_should_be_created() {
-        Mockito.when(propertyMapper.toProperty(any(CreatePropertyRequest.class))).thenReturn(property);
+        Mockito.when(propertyMapper.toProperty(createPropertyRequest)).thenReturn(property);
         Mockito.when(propertyRepository.save(property)).thenReturn(property);
         Mockito.when(propertyMapper.toPropertyResponse(property)).thenReturn(propertyResponse);
 
@@ -89,15 +107,26 @@ public class PropertyServiceImplUnitTest {
 
     @Test
     public void on_create_property_when_address_length_is_less_throw_badRequest_exception() {
-        CreatePropertyRequest createPropertyReq = createPropertyRequest;
-        createPropertyReq.setAddress("add");
+        createPropertyRequest.setAddress("add");
         try {
-            propertyService.create(createPropertyReq);
+            propertyService.create(createPropertyRequest);
         } catch (ResponseStatusException e) {
             assertEquals(HttpStatus.BAD_REQUEST, e.getStatus());
             assertEquals(ERR_ADDRESS_LENGTH_NOT_ENOUGH, e.getReason());
         }
     }
 
+    @Test
+    public void when_valid_data_then_property_should_be_updated() {
+        property.setIsApproved(false);
+        propertyResponse.setAddress(updatePropertyRequest.getAddress());
+        Mockito.when(propertyMapper.toProperty(updatePropertyRequest)).thenReturn(property);
+        Mockito.when(propertyRepository.findById(anyLong())).thenReturn(java.util.Optional.ofNullable(property));
+        Mockito.when(propertyRepository.save(property)).thenReturn(property);
+        Mockito.when(propertyMapper.toPropertyResponse(property)).thenReturn(propertyResponse);
 
+        PropertyResponse updatedProperty = propertyService.update(updatePropertyRequest);
+        assertEquals(property.getId(), updatedProperty.getId());
+        assertEquals(propertyResponse.getAddress(), updatedProperty.getAddress());
+    }
 }
