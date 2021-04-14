@@ -18,6 +18,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
+import static com.property.management.constant.Constants.ERR_ADDRESS_LENGTH_NOT_ENOUGH;
 import static com.property.management.constant.Constants.ERR_PROPERTY_TYPE_NOT_FOUND;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -65,7 +66,7 @@ public class PropertyServiceImplUnitTest {
     }
 
     @Test
-    public void when_valid_data_the_property_should_be_created() {
+    public void when_valid_data_then_property_should_be_created() {
         Mockito.when(propertyMapper.toProperty(any(CreatePropertyRequest.class))).thenReturn(property);
         Mockito.when(propertyRepository.save(property)).thenReturn(property);
         Mockito.when(propertyMapper.toPropertyResponse(property)).thenReturn(propertyResponse);
@@ -75,7 +76,7 @@ public class PropertyServiceImplUnitTest {
     }
 
     @Test
-    public void when_invalid_property_type_throw_notfound_exception() {
+    public void on_create_property_when_invalid_property_type_throw_notfound_exception() {
         CreatePropertyRequest createPropertyReq = createPropertyRequest;
         createPropertyReq.setType(4);
         try {
@@ -84,6 +85,19 @@ public class PropertyServiceImplUnitTest {
             assertEquals(HttpStatus.NOT_FOUND, e.getStatus());
             assertEquals(ERR_PROPERTY_TYPE_NOT_FOUND, e.getReason());
         }
-
     }
+
+    @Test
+    public void on_create_property_when_address_length_is_less_throw_badRequest_exception() {
+        CreatePropertyRequest createPropertyReq = createPropertyRequest;
+        createPropertyReq.setAddress("add");
+        try {
+            propertyService.create(createPropertyReq);
+        } catch (ResponseStatusException e) {
+            assertEquals(HttpStatus.BAD_REQUEST, e.getStatus());
+            assertEquals(ERR_ADDRESS_LENGTH_NOT_ENOUGH, e.getReason());
+        }
+    }
+
+
 }
