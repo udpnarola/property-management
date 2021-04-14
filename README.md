@@ -18,8 +18,8 @@ For a small prototype, we have used **OncePerRequestFilter** to manage the **aut
 
 ### Start App
 Here is the quickest way to start the app:
-1. set appropriate database credentials in the application-local.yml file
-2. Go to the project root directory and open the terminal
+1. Set appropriate **database credentials** in the **application-local.yml** file
+2. Go to the **project root directory** and **open the terminal**
 3. Execute the following command
 
        mvnw spring-boot:run
