@@ -28,13 +28,13 @@ public class PropertyController {
     }
 
     @PutMapping
-    public ResponseEntity<PropertyResponse> create(@Valid @RequestBody UpdatePropertyRequest updatePropertyRequest) {
+    public ResponseEntity<PropertyResponse> update(@Valid @RequestBody UpdatePropertyRequest updatePropertyRequest) {
         log.info("Rest API to update property {}", updatePropertyRequest);
         return ResponseEntity.ok(propertyService.update(updatePropertyRequest));
     }
 
     @GetMapping
-    public ResponseEntity<List<PropertyResponse>> create(@RequestParam String propertyName) {
+    public ResponseEntity<List<PropertyResponse>> search(@RequestParam String propertyName) {
         log.info("Rest API to search property by name: {}", propertyName);
         return ResponseEntity.ok(propertyService.search(propertyName));
     }
