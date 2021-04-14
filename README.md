@@ -7,7 +7,7 @@ This is a **property management** prototype, here we have the following roles in
 * landloard
  
 Where **admin** and **landlord** can **create, update, search and approve** 
-property an, on the other hand, the **normal user** can use the **search functionality** to find the **approved property**.
+property and, on the other hand, the **normal user** can use the **search functionality** to find the **approved property**.
 
 If someone accesses the APIs without a valid **api-key** then they will get the **401 (UNAUTHORIZED)** exception.
 
