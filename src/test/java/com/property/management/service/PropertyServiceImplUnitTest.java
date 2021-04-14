@@ -22,7 +22,6 @@ import org.springframework.web.server.ResponseStatusException;
 import static com.property.management.constant.Constants.ERR_ADDRESS_LENGTH_NOT_ENOUGH;
 import static com.property.management.constant.Constants.ERR_PROPERTY_TYPE_NOT_FOUND;
 import static org.junit.Assert.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -37,13 +36,13 @@ public class PropertyServiceImplUnitTest {
     @Mock
     private PropertyMapper propertyMapper;
 
-    private static CreatePropertyRequest createPropertyRequest;
-    private static UpdatePropertyRequest updatePropertyRequest;
-    private static Property property;
-    private static PropertyResponse propertyResponse;
+    private CreatePropertyRequest createPropertyRequest;
+    private UpdatePropertyRequest updatePropertyRequest;
+    private Property property;
+    private PropertyResponse propertyResponse;
 
-    @BeforeAll
-    static void init() {
+    @BeforeEach
+    public void init() {
         //CreatePropertyRequest
         CreatePropertyRequest createPropertyReq = new CreatePropertyRequest();
         createPropertyReq.setName("Forest House");
