@@ -8,9 +8,14 @@ public class Constants {
 
     public static final String API_KEY = "api-key";
     public static final Integer DEFAULT_ADDRESS_LENGTH = 5;
+    public static final String PROPERTY_NAME_PARAM = "propertyName";
+
+    //roles
+    public static final String USER_ROLE = "user";
 
     //error
     public static final String ERR_UNAUTHORIZED = "You are unauthorized";
+    public static final String ERR_FORBIDDEN = "You don't have access to this resource";
     public static final String ERR_USER_NOT_FOUND = "User not found for the given api-key";
     public static final String ERR_PROPERTY_NOT_FOUND = "Property not found for the given id";
     public static final String ERR_PROPERTY_TYPE_NOT_FOUND = "Property type not found";

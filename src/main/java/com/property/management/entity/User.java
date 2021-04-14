@@ -31,9 +31,9 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Property> properties = new ArrayList<>();
 
-    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch =  FetchType.EAGER)
     @JoinTable(name = "user_role",
-            joinColumns =  @JoinColumn(name = "user_id"),
+            joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Role> roles = new HashSet<>();
 
@@ -47,12 +47,12 @@ public class User {
         property.setUser(null);
     }
 
-    public void addRole(Role role){
+    public void addRole(Role role) {
         roles.add(role);
         role.getUsers().add(this);
     }
 
-    public void remove(Role role){
+    public void remove(Role role) {
         roles.remove(role);
         role.getUsers().remove(this);
     }
