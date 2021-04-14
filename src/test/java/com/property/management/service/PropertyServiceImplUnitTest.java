@@ -19,10 +19,16 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
 import static com.property.management.constant.Constants.ERR_ADDRESS_LENGTH_NOT_ENOUGH;
 import static com.property.management.constant.Constants.ERR_PROPERTY_TYPE_NOT_FOUND;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
 
 @RunWith(MockitoJUnitRunner.class)
 public class PropertyServiceImplUnitTest {
@@ -149,4 +155,24 @@ public class PropertyServiceImplUnitTest {
             assertEquals(ERR_ADDRESS_LENGTH_NOT_ENOUGH, e.getReason());
         }
     }
+
+    @Test
+    public void on_search_if_property_available_then_return_list_of_property() {
+        property.setName("Forest House");
+        Mockito.when(propertyRepository.findByNameContains(anyString())).thenReturn(Collections.singletonList(property));
+        Mockito.when(propertyMapper.toPropertyResponse(property)).thenReturn(propertyResponse);
+
+        List<PropertyResponse> searchedProperty = propertyService.search("Forest");
+        assertEquals(searchedProperty.size(), 1);
+        assertEquals(searchedProperty.get(0).getAddress(),property.getAddress());
+    }
+
+    @Test
+    public void on_search_if_property_not_available_then_return_empty_list() {
+        Mockito.when(propertyRepository.findByNameContains(anyString())).thenReturn(Collections.emptyList());
+
+        List<PropertyResponse> searchedProperty = propertyService.search("Forest");
+        assertTrue(searchedProperty.isEmpty());
+    }
+
 }
