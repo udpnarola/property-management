@@ -1,13 +1,14 @@
 package com.property.management.service;
 
+import com.property.management.dto.ApprovalResponse;
 import com.property.management.dto.CreatePropertyRequest;
 import com.property.management.dto.PropertyResponse;
 import com.property.management.dto.UpdatePropertyRequest;
 import com.property.management.entity.Property;
+import com.property.management.entity.User;
 import com.property.management.mapper.PropertyMapper;
 import com.property.management.repository.PropertyRepository;
 import com.property.management.repository.UserRepository;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
@@ -19,12 +20,10 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import static com.property.management.constant.Constants.ERR_ADDRESS_LENGTH_NOT_ENOUGH;
-import static com.property.management.constant.Constants.ERR_PROPERTY_TYPE_NOT_FOUND;
+import static com.property.management.constant.Constants.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -44,43 +43,57 @@ public class PropertyServiceImplUnitTest {
 
     private CreatePropertyRequest createPropertyRequest;
     private UpdatePropertyRequest updatePropertyRequest;
-    private Property property;
+    private ApprovalResponse approvalResponse;
     private PropertyResponse propertyResponse;
+    private Property property;
+    private User user;
 
     @BeforeEach
     public void init() {
         //CreatePropertyRequest
-        CreatePropertyRequest createPropertyReq = new CreatePropertyRequest();
-        createPropertyReq.setName("Forest House");
-        createPropertyReq.setType(1);
-        createPropertyReq.setAddress("50, down town");
-        createPropertyReq.setBedroom(2);
-        createPropertyReq.setBathroom(1);
-        createPropertyReq.setRent(70.88);
-        createPropertyReq.setIsFurnished(false);
-        createPropertyRequest = createPropertyReq;
+        CreatePropertyRequest createPropertyRequest = new CreatePropertyRequest();
+        createPropertyRequest.setName("Forest House");
+        createPropertyRequest.setType(1);
+        createPropertyRequest.setAddress("50, down town");
+        createPropertyRequest.setBedroom(2);
+        createPropertyRequest.setBathroom(1);
+        createPropertyRequest.setRent(70.88);
+        createPropertyRequest.setIsFurnished(false);
+        this.createPropertyRequest = createPropertyRequest;
 
         //Property
-        Property propertyEntity = new Property();
-        propertyEntity.setId(1L);
-        property = propertyEntity;
+        Property property = new Property();
+        property.setId(1L);
+        this.property = property;
 
         //PropertyResponse
-        PropertyResponse propertyRes = new PropertyResponse();
-        propertyRes.setId(1L);
-        propertyResponse = propertyRes;
+        PropertyResponse propertyResponse = new PropertyResponse();
+        propertyResponse.setId(1L);
+        this.propertyResponse = propertyResponse;
 
         //UpdatePropertyRequest
-        UpdatePropertyRequest updatePropertyReq = new UpdatePropertyRequest();
-        updatePropertyReq.setId(1L);
-        updatePropertyReq.setName("Paradise House");
-        updatePropertyReq.setType(1);
-        updatePropertyReq.setAddress("50, down town");
-        updatePropertyReq.setBedroom(2);
-        updatePropertyReq.setBathroom(1);
-        updatePropertyReq.setRent(70.88);
-        updatePropertyReq.setIsFurnished(false);
-        updatePropertyRequest = updatePropertyReq;
+        UpdatePropertyRequest updatePropertyRequest = new UpdatePropertyRequest();
+        updatePropertyRequest.setId(1L);
+        updatePropertyRequest.setName("Paradise House");
+        updatePropertyRequest.setType(1);
+        updatePropertyRequest.setAddress("50, down town");
+        updatePropertyRequest.setBedroom(2);
+        updatePropertyRequest.setBathroom(1);
+        updatePropertyRequest.setRent(70.88);
+        updatePropertyRequest.setIsFurnished(false);
+        this.updatePropertyRequest = updatePropertyRequest;
+
+        ApprovalResponse approvalResponse = new ApprovalResponse();
+        approvalResponse.setIsApproved(true);
+        this.approvalResponse = approvalResponse;
+
+        //User
+        User user = new User();
+        user.setId(1L);
+        user.setApiKey("123456");
+        user.setFirstName("John");
+        user.setLastName("Doe");
+        this.user = user;
     }
 
     @BeforeEach
@@ -164,7 +177,7 @@ public class PropertyServiceImplUnitTest {
 
         List<PropertyResponse> searchedProperty = propertyService.search("Forest");
         assertEquals(searchedProperty.size(), 1);
-        assertEquals(searchedProperty.get(0).getAddress(),property.getAddress());
+        assertEquals(searchedProperty.get(0).getAddress(), property.getAddress());
     }
 
     @Test
@@ -173,6 +186,30 @@ public class PropertyServiceImplUnitTest {
 
         List<PropertyResponse> searchedProperty = propertyService.search("Forest");
         assertTrue(searchedProperty.isEmpty());
+    }
+
+    @Test
+    public void when_valid_data_then_property_should_be_approved() {
+        property.setIsApproved(false);
+        Mockito.when(propertyRepository.findById(anyLong())).thenReturn(java.util.Optional.ofNullable(property));
+        Mockito.when(userRepository.findByApiKey(anyString())).thenReturn(java.util.Optional.ofNullable(user));
+        Mockito.when(propertyMapper.toApprovalResponse(property)).thenReturn(approvalResponse);
+
+        ApprovalResponse approvalResponse = propertyService.approve("12345",1L);
+        assertTrue(approvalResponse.getIsApproved());
+    }
+
+    @Test
+    public void when_property_is_already_approved_then_throw_badRequest_exception() {
+        property.setIsApproved(true);
+        Mockito.when(propertyRepository.findById(anyLong())).thenReturn(java.util.Optional.ofNullable(property));
+
+        try {
+            propertyService.approve("12345", 1L);
+        }catch (ResponseStatusException e){
+            assertEquals(HttpStatus.BAD_REQUEST, e.getStatus());
+            assertEquals(ERR_PROPERTY_ALREADY_APPROVED, e.getReason());
+        }
     }
 
 }
