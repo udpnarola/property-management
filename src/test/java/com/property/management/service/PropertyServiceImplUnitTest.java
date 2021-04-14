@@ -94,10 +94,9 @@ public class PropertyServiceImplUnitTest {
 
     @Test
     public void on_create_property_when_invalid_property_type_throw_notfound_exception() {
-        CreatePropertyRequest createPropertyReq = createPropertyRequest;
-        createPropertyReq.setType(4);
+        createPropertyRequest.setType(4);
         try {
-            propertyService.create(createPropertyReq);
+            propertyService.create(createPropertyRequest);
         } catch (ResponseStatusException e) {
             assertEquals(HttpStatus.NOT_FOUND, e.getStatus());
             assertEquals(ERR_PROPERTY_TYPE_NOT_FOUND, e.getReason());
@@ -117,7 +116,7 @@ public class PropertyServiceImplUnitTest {
 
     @Test
     public void when_valid_data_then_property_should_be_updated() {
-        property.setIsApproved(false);
+        property.setIsApproved(true);
         propertyResponse.setAddress(updatePropertyRequest.getAddress());
         Mockito.when(propertyMapper.toProperty(updatePropertyRequest)).thenReturn(property);
         Mockito.when(propertyRepository.findById(anyLong())).thenReturn(java.util.Optional.ofNullable(property));
@@ -127,5 +126,27 @@ public class PropertyServiceImplUnitTest {
         PropertyResponse updatedProperty = propertyService.update(updatePropertyRequest);
         assertEquals(property.getId(), updatedProperty.getId());
         assertEquals(propertyResponse.getAddress(), updatedProperty.getAddress());
+    }
+
+    @Test
+    public void on_update_property_when_invalid_property_type_throw_notfound_exception() {
+        updatePropertyRequest.setType(4);
+        try {
+            propertyService.update(updatePropertyRequest);
+        } catch (ResponseStatusException e) {
+            assertEquals(HttpStatus.NOT_FOUND, e.getStatus());
+            assertEquals(ERR_PROPERTY_TYPE_NOT_FOUND, e.getReason());
+        }
+    }
+
+    @Test
+    public void on_update_property_when_address_length_is_less_throw_badRequest_exception() {
+        updatePropertyRequest.setAddress("add");
+        try {
+            propertyService.update(updatePropertyRequest);
+        } catch (ResponseStatusException e) {
+            assertEquals(HttpStatus.BAD_REQUEST, e.getStatus());
+            assertEquals(ERR_ADDRESS_LENGTH_NOT_ENOUGH, e.getReason());
+        }
     }
 }
