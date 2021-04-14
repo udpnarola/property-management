@@ -66,7 +66,7 @@ public class PropertyServiceImpl implements PropertyService {
     public List<PropertyResponse> search(String name) {
         log.info("Service method to search property: {}", name);
         return propertyRepository
-                .findByNameContains(name)
+                .findByNameContainsAndIsApprovedTrue(name)
                 .parallelStream()
                 .map(propertyMapper::toPropertyResponse)
                 .collect(Collectors.toList());

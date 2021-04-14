@@ -172,7 +172,7 @@ public class PropertyServiceImplUnitTest {
     @Test
     public void on_search_if_property_available_then_return_list_of_property() {
         property.setName("Forest House");
-        Mockito.when(propertyRepository.findByNameContains(anyString())).thenReturn(Collections.singletonList(property));
+        Mockito.when(propertyRepository.findByNameContainsAndIsApprovedTrue(anyString())).thenReturn(Collections.singletonList(property));
         Mockito.when(propertyMapper.toPropertyResponse(property)).thenReturn(propertyResponse);
 
         List<PropertyResponse> searchedProperty = propertyService.search("Forest");
@@ -182,7 +182,7 @@ public class PropertyServiceImplUnitTest {
 
     @Test
     public void on_search_if_property_not_available_then_return_empty_list() {
-        Mockito.when(propertyRepository.findByNameContains(anyString())).thenReturn(Collections.emptyList());
+        Mockito.when(propertyRepository.findByNameContainsAndIsApprovedTrue(anyString())).thenReturn(Collections.emptyList());
 
         List<PropertyResponse> searchedProperty = propertyService.search("Forest");
         assertTrue(searchedProperty.isEmpty());
